@@ -1,0 +1,387 @@
+/* ===========================================================
+   Daily Sudoku — stylesheet
+   Loaded from inside an <svg><foreignObject> wrapper, so every
+   rule is scoped under .sdk-root instead of *, html, body, :root
+   to avoid leaking into the host page it's embedded in.
+=========================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Libre+Franklin:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+
+.sdk-root, .sdk-root *{ box-sizing:border-box; }
+
+.sdk-root{
+  --paper:        #ECE6D6;
+  --paper-raised: #F7F3E8;
+  --ink:          #211E19;
+  --ink-soft:     #5B5748;
+  --ink-faint:    #8B856E;
+  --rule:         #CBC1A4;
+  --grid-line:    #211E19;
+  --accent-red:   #A23B2E;
+  --accent-blue:  #2C4A6B;
+  --accent-green: #3E6B4C;
+  --tint-blue-lo: rgba(44,74,107,0.08);
+  --tint-blue-md: rgba(44,74,107,0.16);
+  --tint-blue-hi: rgba(44,74,107,0.24);
+  --tint-red-lo:  rgba(162,59,46,0.14);
+
+  --font-display: 'Libre Caslon Display', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Libre Franklin', 'Helvetica Neue', Arial, sans-serif;
+
+  margin:0; padding: 28px 14px 48px;
+  display:flex;
+  justify-content:center;
+  background-color: var(--paper);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.13  0 0 0 0 0.12  0 0 0 0 0.10  0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  width:100%;
+  height:100%;
+}
+
+.sdk-page{
+  width:100%;
+  max-width: 560px;
+}
+
+/* ---------- Masthead ---------- */
+.sdk-masthead{
+  text-align:center;
+  padding-top: 4px;
+}
+.sdk-masthead h1{
+  font-family: var(--font-display);
+  font-weight:400;
+  font-size: clamp(2.1rem, 8vw, 3rem);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0;
+  color: var(--ink);
+}
+.sdk-masthead-rule{
+  margin: 10px auto 0;
+  max-width: 460px;
+  border-top: 3px solid var(--ink);
+}
+.sdk-masthead-rule.sdk-thin{
+  margin-top: 3px;
+  border-top: 1px solid var(--ink);
+}
+.sdk-dateline{
+  text-align:center;
+  margin: 12px 0 22px;
+  font-family: var(--font-sans);
+  font-style: italic;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  letter-spacing: 0.01em;
+}
+
+/* ---------- Difficulty tabs ---------- */
+.sdk-tabs{
+  display:flex;
+  justify-content:center;
+  gap: 28px;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 18px;
+}
+.sdk-tab{
+  background:none; border:none; cursor:pointer;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 6px 2px 10px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color .15s ease;
+}
+.sdk-tab:hover{ color: var(--ink-soft); }
+.sdk-tab[aria-selected="true"]{
+  color: var(--ink);
+  border-bottom-color: var(--accent-red);
+}
+
+/* ---------- Status row ---------- */
+.sdk-status-row{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin-bottom: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.sdk-status-row .sdk-best{ color: var(--ink-faint); }
+#sdk-toast{
+  text-align:center;
+  min-height: 1.2em;
+  font-size: 0.82rem;
+  color: var(--accent-blue);
+  margin-bottom: 8px;
+  opacity:0;
+  transition: opacity .25s ease;
+}
+#sdk-toast.sdk-show{ opacity:1; }
+
+/* ---------- Grid ---------- */
+.sdk-board-wrap{
+  position:relative;
+  width: min(480px, 100%);
+  margin: 0 auto;
+}
+.sdk-grid{
+  display:grid;
+  grid-template-columns: repeat(9, 1fr);
+  width:100%;
+  aspect-ratio: 1;
+  background: var(--paper-raised);
+  border: 3px solid var(--grid-line);
+  box-shadow: 0 1px 0 rgba(33,30,25,0.06);
+}
+.sdk-cell{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-right: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  cursor:pointer;
+  user-select:none;
+  background: transparent;
+}
+.sdk-cell.sdk-no-border-right{ border-right:none; }
+.sdk-cell.sdk-no-border-bottom{ border-bottom:none; }
+.sdk-cell.sdk-box-left{ border-left: 2px solid var(--grid-line); }
+.sdk-cell.sdk-box-top{ border-top: 2px solid var(--grid-line); }
+
+.sdk-cell.sdk-peer{ background: var(--tint-blue-lo); }
+.sdk-cell.sdk-same-value{ background: var(--tint-blue-md); }
+.sdk-cell.sdk-selected{ background: var(--tint-blue-hi); }
+.sdk-cell.sdk-marked-wrong, .sdk-cell.sdk-conflict{ background: var(--tint-red-lo); }
+
+.sdk-cell-value{
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1rem, 4.6vw, 1.5rem);
+  font-weight: 500;
+  color: var(--accent-blue);
+  line-height:1;
+}
+.sdk-cell.sdk-given .sdk-cell-value{
+  font-weight: 700;
+  color: var(--ink);
+}
+.sdk-cell.sdk-marked-wrong .sdk-cell-value,
+.sdk-cell.sdk-conflict .sdk-cell-value{
+  color: var(--accent-red);
+}
+
+.sdk-cell-notes{
+  position:absolute;
+  inset: 0;
+  display:grid;
+  grid-template-columns: repeat(3,1fr);
+  grid-template-rows: repeat(3,1fr);
+  padding: 2px;
+}
+.sdk-cell.sdk-has-value .sdk-cell-notes{ display:none; }
+.sdk-note{
+  display:flex; align-items:center; justify-content:center;
+  font-size: clamp(0.5rem, 1.8vw, 0.62rem);
+  color: var(--ink-faint);
+  font-weight:600;
+  visibility:hidden;
+}
+.sdk-note.sdk-active{ visibility:visible; }
+
+.sdk-cell:focus-visible{
+  outline: 2px solid var(--accent-blue);
+  outline-offset: -2px;
+  z-index:2;
+}
+
+/* ---------- Solved stamp ---------- */
+.sdk-stamp{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+  opacity:0;
+}
+.sdk-stamp.sdk-show{
+  opacity:1;
+  animation: sdkStampIn .45s cubic-bezier(.2,1.4,.4,1) both;
+}
+.sdk-stamp-inner{
+  border: 4px solid var(--accent-red);
+  color: var(--accent-red);
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: clamp(1.4rem, 6vw, 2.1rem);
+  padding: 10px 28px;
+  transform: rotate(-7deg);
+  background: rgba(247,243,232,0.85);
+  text-align:center;
+}
+.sdk-stamp-inner small{
+  display:block;
+  font-family: var(--font-sans);
+  font-style: italic;
+  font-size: 0.5em;
+  letter-spacing: 0.02em;
+  text-transform:none;
+  margin-top: 4px;
+}
+@keyframes sdkStampIn{
+  from{ transform: scale(1.5); opacity:0; }
+  to{ transform: scale(1); opacity:1; }
+}
+@media (prefers-reduced-motion: reduce){
+  .sdk-stamp.sdk-show{ animation:none; }
+}
+
+/* ---------- Controls ---------- */
+.sdk-controls{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap: 0;
+  margin: 18px 0 20px;
+  flex-wrap:wrap;
+}
+.sdk-ctrl-btn{
+  background:none;
+  border:none;
+  cursor:pointer;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight:600;
+  letter-spacing:0.04em;
+  color: var(--ink-soft);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  padding: 4px 16px;
+  border-right: 1px solid var(--rule);
+  transition: color .15s ease;
+}
+.sdk-controls .sdk-ctrl-btn:last-child{ border-right:none; }
+.sdk-ctrl-btn:hover{ color: var(--ink); }
+.sdk-ctrl-btn[aria-pressed="true"]{ color: var(--accent-red); }
+.sdk-ctrl-btn:disabled{ opacity:0.35; cursor:default; }
+.sdk-ctrl-btn svg{ width:18px; height:18px; stroke: currentColor; fill:none; }
+
+/* ---------- Number pad ---------- */
+.sdk-numpad{
+  display:flex;
+  justify-content:center;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-wrap:wrap;
+}
+.sdk-num-btn{
+  width: 42px; height: 42px;
+  border: 1px solid var(--rule);
+  background: var(--paper-raised);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  font-weight:600;
+  cursor:pointer;
+  font-variant-numeric: tabular-nums;
+  transition: background .15s ease, color .15s ease;
+}
+.sdk-num-btn:hover{ background: var(--tint-blue-lo); }
+.sdk-num-btn:disabled{
+  opacity: 0.3;
+  cursor:default;
+  background:transparent;
+}
+
+/* ---------- Footer ---------- */
+.sdk-footer{
+  text-align:center;
+  margin-top: 22px;
+}
+.sdk-reveal-link{
+  background:none; border:none;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  text-decoration: underline;
+  cursor:pointer;
+}
+.sdk-reveal-link:hover{ color: var(--accent-red); }
+.sdk-reveal-link:disabled{ opacity:0.35; cursor:default; text-decoration:none; }
+.sdk-reveal-link:disabled:hover{ color: var(--ink-faint); }
+.sdk-countdown{
+  margin-top: 10px;
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+.sdk-refresh-banner{
+  display:none;
+  text-align:center;
+  background: var(--tint-blue-lo);
+  border: 1px solid var(--accent-blue);
+  color: var(--accent-blue);
+  font-size: 0.82rem;
+  padding: 8px 10px;
+  margin: 0 0 16px;
+}
+.sdk-refresh-banner.sdk-show{ display:block; }
+.sdk-refresh-banner button{
+  margin-left: 8px;
+  background:none;
+  border:none;
+  text-decoration:underline;
+  font-weight:700;
+  color: var(--accent-blue);
+  cursor:pointer;
+  font-size:inherit;
+  font-family:inherit;
+}
+
+details.sdk-devtools{
+  margin: 30px auto 0;
+  max-width: 320px;
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+}
+details.sdk-devtools summary{ cursor:pointer; }
+details.sdk-devtools .sdk-row{
+  display:flex; gap:8px; align-items:center;
+  margin-top:8px;
+}
+details.sdk-devtools input[type="date"]{
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  padding: 3px 6px;
+  border: 1px solid var(--rule);
+  background: var(--paper-raised);
+  color: var(--ink);
+}
+details.sdk-devtools button{
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  padding: 3px 10px;
+  border: 1px solid var(--ink-soft);
+  background: var(--paper-raised);
+  cursor:pointer;
+}
+
+@media (max-width: 420px){
+  .sdk-controls{ gap:0; }
+  .sdk-ctrl-btn{ padding: 4px 10px; font-size:0.72rem; }
+  .sdk-num-btn{ width: 34px; height: 38px; font-size:0.95rem; }
+}
