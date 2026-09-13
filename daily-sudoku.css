@@ -182,6 +182,7 @@
   color: var(--accent-blue);
   line-height:1;
 }
+.sdk-cell:not(.sdk-has-value) .sdk-cell-value{ display:none; }
 .sdk-cell.sdk-given .sdk-cell-value{
   font-weight: 700;
   color: var(--ink);
@@ -192,15 +193,16 @@
 }
 
 .sdk-cell-notes{
-  position:absolute;
-  inset: 0;
-  display:grid;
-  grid-template-columns: repeat(3,1fr);
-  grid-template-rows: repeat(3,1fr);
+  display:flex;
+  flex-wrap:wrap;
+  width:100%;
+  height:100%;
   padding: 2px;
 }
 .sdk-cell.sdk-has-value .sdk-cell-notes{ display:none; }
 .sdk-note{
+  width: 33.333%;
+  height: 33.333%;
   display:flex; align-items:center; justify-content:center;
   font-size: clamp(0.5rem, 1.8vw, 0.62rem);
   color: var(--ink-faint);
@@ -218,7 +220,7 @@
 /* ---------- Solved stamp ---------- */
 .sdk-stamp{
   position:absolute;
-  inset:0;
+  top:0; right:0; bottom:0; left:0;
   display:flex;
   align-items:center;
   justify-content:center;
