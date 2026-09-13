@@ -1,13 +1,18 @@
-
+/* ===========================================================
+   Daily Sudoku — logic
+   Runs inside an <svg><foreignObject> wrapper. All DOM lookups
+   use the sdk- prefixed ids/classes defined in daily-sudoku.svg
+   and daily-sudoku.css.
+=========================================================== */
 (function(){
   "use strict";
- 
+
   /* =========================================================
      1. SEEDED RANDOM + PUZZLE GENERATION
      (deterministic: same date + difficulty always produces
      the same puzzle for every reader)
   ========================================================= */
- 
+
   function hashStringToSeed(str){
     let h = 1779033703 ^ str.length;
     for (let i = 0; i < str.length; i++){
@@ -18,7 +23,7 @@
     h = Math.imul(h ^ (h >>> 13), 3266489909);
     return (h ^= h >>> 16) >>> 0;
   }
- 
+
   function mulberry32(a){
     return function(){
       a |= 0; a = (a + 0x6D2B79F5) | 0;
@@ -27,7 +32,7 @@
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
   }
- 
+
   function shuffled(arr, rng){
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--){
@@ -36,7 +41,7 @@
     }
     return a;
   }
- 
+
   // Generates a complete, valid, randomized 9x9 solution grid.
   // Uses the classic band/stack shuffle of a base Latin square,
   // which is always valid by construction (no backtracking needed).
@@ -56,7 +61,7 @@
     }
     return board;
   }
- 
+
   // Counts solutions of a flat 81-cell board up to `limit` (early exit).
   function countSolutions(flatBoard, limit){
     const b = flatBoard.slice();
@@ -90,9 +95,9 @@
     backtrack();
     return count;
   }
- 
+
   const DIFFICULTY_CLUES = { easy: 44, medium: 34, hard: 28 };
- 
+
   // Carves clues out of a full solution, checking after every removal
   // that the puzzle still has exactly one solution. Removes symmetric
   // pairs where possible for a classic look.
@@ -125,35 +130,35 @@
     }
     return puzzle;
   }
- 
+
   function buildPuzzle(dateStr, difficulty){
     const rng = mulberry32(hashStringToSeed(dateStr + "-" + difficulty));
     const solution = generateSolvedGrid(rng);
     const puzzle = makePuzzle(solution, DIFFICULTY_CLUES[difficulty] || 34, rng);
     return { solution, puzzle };
   }
- 
+
   /* =========================================================
      2. DATE HELPERS
   ========================================================= */
- 
+
   function pad2(n){ return String(n).padStart(2,"0"); }
- 
+
   function todayStr(){
     const d = new Date();
     return d.getFullYear() + "-" + pad2(d.getMonth()+1) + "-" + pad2(d.getDate());
   }
- 
+
   function parseDateStr(s){
     const [y,m,d] = s.split("-").map(Number);
     return new Date(y, m-1, d);
   }
- 
+
   function formatDateLine(dateStr){
     const d = parseDateStr(dateStr);
     return d.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
   }
- 
+
   // Adjust this to your publication's actual puzzle-launch date.
   const ISSUE_EPOCH = parseDateStr("2024-01-01");
   function issueNumber(dateStr){
@@ -161,46 +166,46 @@
     const days = Math.round((d - ISSUE_EPOCH) / 86400000) + 1;
     return days.toLocaleString("en-US");
   }
- 
+
   // Default difficulty by day of week — tune to taste.
   // index: 0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri 6=Sat
   const WEEKDAY_DIFFICULTY = ["medium","easy","easy","medium","medium","hard","hard"];
   function defaultDifficultyFor(dateStr){
     return WEEKDAY_DIFFICULTY[parseDateStr(dateStr).getDay()];
   }
- 
+
   function formatTime(totalSeconds){
     const m = Math.floor(totalSeconds/60), s = totalSeconds % 60;
     return m + ":" + pad2(s);
   }
- 
+
   /* =========================================================
      3. APP STATE
   ========================================================= */
- 
+
   const els = {
-    grid: document.getElementById("grid"),
-    numpad: document.getElementById("numpad"),
-    dateline: document.getElementById("dateline"),
-    timer: document.getElementById("timer"),
-    bestTime: document.getElementById("bestTime"),
-    toast: document.getElementById("toast"),
-    tabs: Array.from(document.querySelectorAll(".tab")),
-    notesBtn: document.getElementById("notesBtn"),
-    undoBtn: document.getElementById("undoBtn"),
-    eraseBtn: document.getElementById("eraseBtn"),
-    checkBtn: document.getElementById("checkBtn"),
-    revealBtn: document.getElementById("revealBtn"),
-    stamp: document.getElementById("stamp"),
-    stampText: document.getElementById("stampText"),
-    countdown: document.getElementById("countdown"),
-    refreshBanner: document.getElementById("refreshBanner"),
-    refreshBtn: document.getElementById("refreshBtn"),
-    previewDate: document.getElementById("previewDate"),
-    previewBtn: document.getElementById("previewBtn"),
-    previewToday: document.getElementById("previewToday"),
+    grid: document.getElementById("sdk-grid"),
+    numpad: document.getElementById("sdk-numpad"),
+    dateline: document.getElementById("sdk-dateline"),
+    timer: document.getElementById("sdk-timer"),
+    bestTime: document.getElementById("sdk-bestTime"),
+    toast: document.getElementById("sdk-toast"),
+    tabs: Array.from(document.querySelectorAll(".sdk-tab")),
+    notesBtn: document.getElementById("sdk-notesBtn"),
+    undoBtn: document.getElementById("sdk-undoBtn"),
+    eraseBtn: document.getElementById("sdk-eraseBtn"),
+    checkBtn: document.getElementById("sdk-checkBtn"),
+    revealBtn: document.getElementById("sdk-revealBtn"),
+    stamp: document.getElementById("sdk-stamp"),
+    stampText: document.getElementById("sdk-stampText"),
+    countdown: document.getElementById("sdk-countdown"),
+    refreshBanner: document.getElementById("sdk-refreshBanner"),
+    refreshBtn: document.getElementById("sdk-refreshBtn"),
+    previewDate: document.getElementById("sdk-previewDate"),
+    previewBtn: document.getElementById("sdk-previewBtn"),
+    previewToday: document.getElementById("sdk-previewToday"),
   };
- 
+
   const state = {
     viewingToday: true,
     date: todayStr(),
@@ -220,14 +225,14 @@
     elapsed: 0,
     timerId: null,
   };
- 
+
   function storageKey(dateStr, diff){ return "sudoku:progress:" + dateStr + ":" + diff; }
   function bestKey(diff){ return "sudoku:best:" + diff; }
- 
+
   /* =========================================================
      4. LOAD / SAVE
   ========================================================= */
- 
+
   function loadOrCreate(dateStr, difficulty){
     stopTimer();
     const { solution, puzzle } = buildPuzzle(dateStr, difficulty);
@@ -243,7 +248,7 @@
     state.solved = false;
     state.revealed = false;
     state.elapsed = 0;
- 
+
     const saved = readSaved(dateStr, difficulty);
     if (saved){
       state.values = saved.values;
@@ -252,19 +257,19 @@
       state.solved = !!saved.solved;
       state.revealed = !!saved.revealed;
     }
- 
+
     state.selected = null;
     if (!state.solved){
       const firstEmpty = state.values.findIndex(v => v === 0);
       if (firstEmpty !== -1) state.selected = firstEmpty;
     }
- 
+
     renderAll();
     updateBestTimeDisplay();
     if (!state.solved) startTimer();
     else showStamp(state.revealed ? "revealed" : "solved");
   }
- 
+
   function readSaved(dateStr, difficulty){
     try{
       const raw = localStorage.getItem(storageKey(dateStr, difficulty));
@@ -272,7 +277,7 @@
       return JSON.parse(raw);
     } catch(e){ return null; }
   }
- 
+
   function saveProgress(){
     try{
       localStorage.setItem(storageKey(state.date, state.difficulty), JSON.stringify({
@@ -284,14 +289,14 @@
       }));
     } catch(e){ /* storage unavailable — ignore */ }
   }
- 
+
   function updateBestTimeDisplay(){
     try{
       const raw = localStorage.getItem(bestKey(state.difficulty));
       els.bestTime.textContent = raw ? ("Best " + formatTime(parseInt(raw,10))) : "";
     } catch(e){ els.bestTime.textContent = ""; }
   }
- 
+
   function maybeSaveBestTime(){
     if (state.revealed) return;
     try{
@@ -303,11 +308,11 @@
     } catch(e){ /* ignore */ }
     updateBestTimeDisplay();
   }
- 
+
   /* =========================================================
      5. TIMER
   ========================================================= */
- 
+
   function startTimer(){
     stopTimer();
     state.startedAt = Date.now() - state.elapsed*1000;
@@ -324,13 +329,13 @@
     if (document.hidden) stopTimer();
     else if (!state.solved) startTimer();
   });
- 
+
   /* =========================================================
      6. GRID BUILD + RENDER
   ========================================================= */
- 
+
   const cellEls = [];
- 
+
   function buildGridDOM(){
     els.grid.innerHTML = "";
     cellEls.length = 0;
@@ -338,40 +343,40 @@
       for (let c = 0; c < 9; c++){
         const idx = r*9+c;
         const cell = document.createElement("div");
-        cell.className = "cell";
+        cell.className = "sdk-cell";
         cell.setAttribute("tabindex", "-1");
         cell.setAttribute("role", "button");
-        if (c % 3 === 0 && c !== 0) cell.classList.add("box-left");
-        if (r % 3 === 0 && r !== 0) cell.classList.add("box-top");
-        if (c === 8) cell.classList.add("no-border-right");
-        if (r === 8) cell.classList.add("no-border-bottom");
- 
+        if (c % 3 === 0 && c !== 0) cell.classList.add("sdk-box-left");
+        if (r % 3 === 0 && r !== 0) cell.classList.add("sdk-box-top");
+        if (c === 8) cell.classList.add("sdk-no-border-right");
+        if (r === 8) cell.classList.add("sdk-no-border-bottom");
+
         const valueEl = document.createElement("span");
-        valueEl.className = "cell-value";
+        valueEl.className = "sdk-cell-value";
         cell.appendChild(valueEl);
- 
+
         const notesEl = document.createElement("div");
-        notesEl.className = "cell-notes";
+        notesEl.className = "sdk-cell-notes";
         for (let n = 1; n <= 9; n++){
           const noteSpan = document.createElement("span");
-          noteSpan.className = "note";
+          noteSpan.className = "sdk-note";
           noteSpan.textContent = n;
           notesEl.appendChild(noteSpan);
         }
         cell.appendChild(notesEl);
- 
+
         cell.addEventListener("click", () => selectCell(idx));
         els.grid.appendChild(cell);
         cellEls.push(cell);
       }
     }
   }
- 
+
   function buildNumpadDOM(){
     els.numpad.innerHTML = "";
     for (let n = 1; n <= 9; n++){
       const btn = document.createElement("button");
-      btn.className = "num-btn";
+      btn.className = "sdk-num-btn";
       btn.type = "button";
       btn.textContent = n;
       btn.addEventListener("click", () => handleDigit(n));
@@ -379,7 +384,7 @@
       btn.dataset.n = n;
     }
   }
- 
+
   function peersOf(idx){
     const r = Math.floor(idx/9), c = idx % 9;
     const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
@@ -389,7 +394,7 @@
     set.delete(idx);
     return set;
   }
- 
+
   function computeConflicts(){
     const conflicts = new Set();
     function scan(indices){
@@ -410,48 +415,48 @@
     }
     return conflicts;
   }
- 
+
   function renderAll(){
     const conflicts = computeConflicts();
     const peers = state.selected !== null ? peersOf(state.selected) : new Set();
     const selVal = state.selected !== null ? state.values[state.selected] : 0;
- 
+
     for (let idx = 0; idx < 81; idx++){
       const cell = cellEls[idx];
-      const valueEl = cell.querySelector(".cell-value");
+      const valueEl = cell.querySelector(".sdk-cell-value");
       const v = state.values[idx];
       const given = state.given[idx];
- 
-      cell.classList.toggle("given", given);
-      cell.classList.toggle("has-value", v !== 0);
-      cell.classList.toggle("selected", idx === state.selected);
-      cell.classList.toggle("peer", peers.has(idx) && idx !== state.selected);
-      cell.classList.toggle("same-value", v !== 0 && selVal !== 0 && v === selVal && idx !== state.selected);
-      cell.classList.toggle("conflict", conflicts.has(idx) && !given);
-      cell.classList.toggle("marked-wrong", state.markedWrong.has(idx) && !given);
- 
+
+      cell.classList.toggle("sdk-given", given);
+      cell.classList.toggle("sdk-has-value", v !== 0);
+      cell.classList.toggle("sdk-selected", idx === state.selected);
+      cell.classList.toggle("sdk-peer", peers.has(idx) && idx !== state.selected);
+      cell.classList.toggle("sdk-same-value", v !== 0 && selVal !== 0 && v === selVal && idx !== state.selected);
+      cell.classList.toggle("sdk-conflict", conflicts.has(idx) && !given);
+      cell.classList.toggle("sdk-marked-wrong", state.markedWrong.has(idx) && !given);
+
       valueEl.textContent = v !== 0 ? v : "";
- 
-      const noteSpans = cell.querySelectorAll(".note");
+
+      const noteSpans = cell.querySelectorAll(".sdk-note");
       const cellNotes = state.notes[idx];
       noteSpans.forEach((span, i) => {
-        span.classList.toggle("active", v === 0 && cellNotes.has(i+1));
+        span.classList.toggle("sdk-active", v === 0 && cellNotes.has(i+1));
       });
- 
+
       cell.setAttribute("aria-label",
         "Row " + (Math.floor(idx/9)+1) + " column " + (idx%9+1) +
         (v ? (", " + v + (given ? " (given)" : "")) : ", empty"));
     }
- 
+
     // number pad: disable digits that are fully & correctly placed
-    const padButtons = els.numpad.querySelectorAll(".num-btn");
+    const padButtons = els.numpad.querySelectorAll(".sdk-num-btn");
     padButtons.forEach(btn => {
       const n = parseInt(btn.dataset.n, 10);
       let correctCount = 0;
       for (let i = 0; i < 81; i++){ if (state.values[i] === n && state.solution[i] === n) correctCount++; }
       btn.disabled = correctCount >= 9;
     });
- 
+
     els.notesBtn.setAttribute("aria-pressed", String(state.notesMode));
     els.notesBtn.disabled = state.solved;
     els.undoBtn.disabled = state.solved || state.history.length === 0;
@@ -459,27 +464,27 @@
     els.checkBtn.disabled = state.solved;
     els.revealBtn.disabled = state.solved;
   }
- 
+
   /* =========================================================
      7. INTERACTION
   ========================================================= */
- 
+
   function selectCell(idx){
     state.selected = idx;
     renderAll();
   }
- 
+
   function pushHistory(action){
     state.history.push(action);
     if (state.history.length > 300) state.history.shift();
   }
- 
+
   function handleDigit(n){
     if (state.solved) return;
     if (state.selected === null) return;
     const idx = state.selected;
     if (state.given[idx]) return;
- 
+
     if (state.notesMode){
       const noteSet = state.notes[idx];
       const had = noteSet.has(n);
@@ -499,7 +504,7 @@
     saveProgress();
     renderAll();
   }
- 
+
   function eraseSelected(){
     if (state.solved) return;
     if (state.selected === null) return;
@@ -515,7 +520,7 @@
     saveProgress();
     renderAll();
   }
- 
+
   function undo(){
     if (state.solved) return;
     const action = state.history.pop();
@@ -530,7 +535,7 @@
     saveProgress();
     renderAll();
   }
- 
+
   function checkPuzzle(){
     let wrong = 0;
     for (let i = 0; i < 81; i++){
@@ -543,7 +548,7 @@
     renderAll();
     showToast(wrong === 0 ? "Everything checks out so far." : (wrong + (wrong===1?" square needs":" squares need") + " another look."));
   }
- 
+
   function checkForWin(){
     if (state.values.includes(0)) return;
     for (let i = 0; i < 81; i++){ if (state.values[i] !== state.solution[i]) return; }
@@ -553,7 +558,7 @@
     maybeSaveBestTime();
     showStamp("solved");
   }
- 
+
   function revealSolution(){
     if (state.solved) return;
     const ok = window.confirm("Reveal the full solution? This ends today's timer for this difficulty.");
@@ -568,27 +573,27 @@
     renderAll();
     showStamp("revealed");
   }
- 
+
   function showStamp(kind){
     els.stampText.innerHTML = kind === "solved"
       ? ("Solved<small>" + formatTime(state.elapsed) + "</small>")
       : "Revealed<small>solution shown</small>";
-    els.stamp.classList.add("show");
+    els.stamp.classList.add("sdk-show");
   }
-  function hideStamp(){ els.stamp.classList.remove("show"); }
- 
+  function hideStamp(){ els.stamp.classList.remove("sdk-show"); }
+
   let toastTimer = null;
   function showToast(msg){
     els.toast.textContent = msg;
-    els.toast.classList.add("show");
+    els.toast.classList.add("sdk-show");
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => els.toast.classList.remove("show"), 2600);
+    toastTimer = setTimeout(() => els.toast.classList.remove("sdk-show"), 2600);
   }
- 
+
   /* =========================================================
      8. KEYBOARD
   ========================================================= */
- 
+
   document.addEventListener("keydown", (e) => {
     if (state.selected === null){
       if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) selectCell(0);
@@ -603,33 +608,33 @@
     else if (e.key === "ArrowRight"){ selectCell(r*9+((c+1)%9)); e.preventDefault(); }
     else if (e.key.toLowerCase() === "n"){ toggleNotesMode(); }
   });
- 
+
   function toggleNotesMode(){
     state.notesMode = !state.notesMode;
     renderAll();
   }
- 
+
   /* =========================================================
      9. TABS + CONTROLS WIRE-UP
   ========================================================= */
- 
+
   function selectDifficulty(diff, dateStr){
     els.tabs.forEach(t => t.setAttribute("aria-selected", String(t.dataset.diff === diff)));
     try{ localStorage.setItem("sudoku:lastDifficulty", diff); } catch(e){}
     hideStamp();
     loadOrCreate(dateStr || state.date, diff);
   }
- 
+
   els.tabs.forEach(tab => {
     tab.addEventListener("click", () => selectDifficulty(tab.dataset.diff, state.date));
   });
- 
+
   els.notesBtn.addEventListener("click", toggleNotesMode);
   els.undoBtn.addEventListener("click", undo);
   els.eraseBtn.addEventListener("click", eraseSelected);
   els.checkBtn.addEventListener("click", checkPuzzle);
   els.revealBtn.addEventListener("click", revealSolution);
- 
+
   els.previewBtn.addEventListener("click", () => {
     const val = els.previewDate.value;
     if (!val) return;
@@ -643,22 +648,22 @@
     updateDateline(todayStr());
     selectDifficulty(state.difficulty || defaultDifficultyFor(todayStr()), todayStr());
   });
- 
+
   els.refreshBtn.addEventListener("click", () => {
-    els.refreshBanner.classList.remove("show");
+    els.refreshBanner.classList.remove("sdk-show");
     const d = todayStr();
     updateDateline(d);
     selectDifficulty(state.difficulty, d);
   });
- 
+
   function updateDateline(dateStr){
     els.dateline.textContent = formatDateLine(dateStr) + "  ·  No. " + issueNumber(dateStr);
   }
- 
+
   /* =========================================================
      10. MIDNIGHT ROLLOVER COUNTDOWN
   ========================================================= */
- 
+
   function tickCountdown(){
     if (!state.viewingToday){
       els.countdown.textContent = "Previewing " + formatDateLine(state.date);
@@ -671,31 +676,31 @@
     const mm = Math.floor((diff%3600000)/60000);
     const ss = Math.floor((diff%60000)/1000);
     els.countdown.textContent = "Next puzzle in " + pad2(hh) + ":" + pad2(mm) + ":" + pad2(ss);
- 
+
     if (state.viewingToday && todayStr() !== state.date){
-      els.refreshBanner.classList.add("show");
+      els.refreshBanner.classList.add("sdk-show");
     }
   }
   setInterval(tickCountdown, 1000);
   tickCountdown();
- 
+
   /* =========================================================
      11. INIT
   ========================================================= */
- 
+
   buildGridDOM();
   buildNumpadDOM();
- 
+
   const initialDate = todayStr();
   els.previewDate.value = initialDate;
   updateDateline(initialDate);
- 
+
   let startDiff = defaultDifficultyFor(initialDate);
   try{
     const last = localStorage.getItem("sudoku:lastDifficulty");
     if (last && DIFFICULTY_CLUES[last]) startDiff = last;
   } catch(e){}
- 
+
   selectDifficulty(startDiff, initialDate);
- 
+
 })();
