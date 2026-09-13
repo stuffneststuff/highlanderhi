@@ -72,10 +72,7 @@
         <input type="date" id="previewDate">
         <button id="previewBtn" type="button">Load</button>
         <button id="previewToday" type="button">Today</button>
-      </div>
-    </details> 
   
-  </div>
   
 
   
