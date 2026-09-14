@@ -342,7 +342,7 @@
     for (let r = 0; r < 9; r++){
       for (let c = 0; c < 9; c++){
         const idx = r*9+c;
-        const cell = document.createElement("div");
+        const cell = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
         cell.className = "sdk-cell";
         cell.setAttribute("tabindex", "-1");
         cell.setAttribute("role", "button");
@@ -351,14 +351,14 @@
         if (c === 8) cell.classList.add("sdk-no-border-right");
         if (r === 8) cell.classList.add("sdk-no-border-bottom");
 
-        const valueEl = document.createElement("span");
+        const valueEl = document.createElementNS("http://www.w3.org/1999/xhtml", "span");
         valueEl.className = "sdk-cell-value";
         cell.appendChild(valueEl);
 
-        const notesEl = document.createElement("div");
+        const notesEl = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
         notesEl.className = "sdk-cell-notes";
         for (let n = 1; n <= 9; n++){
-          const noteSpan = document.createElement("span");
+          const noteSpan = document.createElementNS("http://www.w3.org/1999/xhtml", "span");
           noteSpan.className = "sdk-note";
           noteSpan.textContent = n;
           notesEl.appendChild(noteSpan);
@@ -375,7 +375,7 @@
   function buildNumpadDOM(){
     els.numpad.innerHTML = "";
     for (let n = 1; n <= 9; n++){
-      const btn = document.createElement("button");
+      const btn = document.createElementNS("http://www.w3.org/1999/xhtml", "button");
       btn.className = "sdk-num-btn";
       btn.type = "button";
       btn.textContent = n;
@@ -575,9 +575,13 @@
   }
 
   function showStamp(kind){
-    els.stampText.innerHTML = kind === "solved"
-      ? ("Solved<small>" + formatTime(state.elapsed) + "</small>")
-      : "Revealed<small>solution shown</small>";
+    els.stampText.innerHTML = "";
+    const mainLine = kind === "solved" ? "Solved" : "Revealed";
+    const subLine = kind === "solved" ? formatTime(state.elapsed) : "solution shown";
+    els.stampText.appendChild(document.createTextNode(mainLine));
+    const small = document.createElementNS("http://www.w3.org/1999/xhtml", "small");
+    small.textContent = subLine;
+    els.stampText.appendChild(small);
     els.stamp.classList.add("sdk-show");
   }
   function hideStamp(){ els.stamp.classList.remove("sdk-show"); }
