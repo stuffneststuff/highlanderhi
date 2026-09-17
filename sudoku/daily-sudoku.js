@@ -180,10 +180,60 @@
   }
 
   /* =========================================================
-     3. APP STATE
+     3. SEASONAL / HOLIDAY THEMES
+     Each theme's match(date) decides whether it's active for a
+     given JS Date. Order matters if ranges could ever overlap —
+     first match wins. Add a new theme by pushing another entry
+     here and a matching ".sdk-root[data-theme=\"id\"]" block in
+     daily-sudoku.css — nothing else needs to change.
+  ========================================================= */
+
+  // weekday: 0=Sun..6=Sat. Returns the day-of-month for the nth
+  // such weekday in a given month (used for floating holidays
+  // like Thanksgiving = 4th Thursday of November).
+  function nthWeekdayOfMonth(year, monthIndex, weekday, n){
+    const first = new Date(year, monthIndex, 1);
+    const offset = (weekday - first.getDay() + 7) % 7;
+    return 1 + offset + (n - 1) * 7;
+  }
+
+  function inMonthDayRange(date, monthIndex, dayStart, dayEnd){
+    return date.getMonth() === monthIndex && date.getDate() >= dayStart && date.getDate() <= dayEnd;
+  }
+
+  const THEMES = [
+    { id: "new-year",         match: (d) => d.getMonth() === 0 && d.getDate() === 1 },
+    { id: "valentines",       match: (d) => inMonthDayRange(d, 1, 10, 14) },
+    { id: "st-patricks",      match: (d) => d.getMonth() === 2 && d.getDate() === 17 },
+    { id: "independence-day", match: (d) => inMonthDayRange(d, 6, 1, 4) },
+    { id: "halloween",        match: (d) => inMonthDayRange(d, 9, 25, 31) },
+    { id: "thanksgiving",     match: (d) => {
+        const fourthThu = nthWeekdayOfMonth(d.getFullYear(), 10, 4, 4);
+        return d.getMonth() === 10 && d.getDate() >= fourthThu - 2 && d.getDate() <= fourthThu;
+      } },
+    { id: "winter-holidays",  match: (d) => d.getMonth() === 11 },
+  ];
+
+  function getThemeId(dateStr){
+    const d = parseDateStr(dateStr);
+    for (const theme of THEMES){
+      if (theme.match(d)) return theme.id;
+    }
+    return null;
+  }
+
+  function applyTheme(dateStr){
+    const themeId = getThemeId(dateStr);
+    if (themeId) els.root.setAttribute("data-theme", themeId);
+    else els.root.removeAttribute("data-theme");
+  }
+
+  /* =========================================================
+     4. APP STATE
   ========================================================= */
 
   const els = {
+    root: document.getElementById("sdk-root"),
     grid: document.getElementById("sdk-grid"),
     numpad: document.getElementById("sdk-numpad"),
     dateline: document.getElementById("sdk-dateline"),
@@ -230,11 +280,12 @@
   function bestKey(diff){ return "sudoku:best:" + diff; }
 
   /* =========================================================
-     4. LOAD / SAVE
+     5. LOAD / SAVE
   ========================================================= */
 
   function loadOrCreate(dateStr, difficulty){
     stopTimer();
+    applyTheme(dateStr);
     const { solution, puzzle } = buildPuzzle(dateStr, difficulty);
     state.date = dateStr;
     state.difficulty = difficulty;
@@ -310,7 +361,7 @@
   }
 
   /* =========================================================
-     5. TIMER
+     6. TIMER
   ========================================================= */
 
   function startTimer(){
@@ -331,7 +382,7 @@
   });
 
   /* =========================================================
-     6. GRID BUILD + RENDER
+     7. GRID BUILD + RENDER
   ========================================================= */
 
   const cellEls = [];
@@ -466,7 +517,7 @@
   }
 
   /* =========================================================
-     7. INTERACTION
+     8. INTERACTION
   ========================================================= */
 
   function selectCell(idx){
@@ -595,7 +646,7 @@
   }
 
   /* =========================================================
-     8. KEYBOARD
+     9. KEYBOARD
   ========================================================= */
 
   document.addEventListener("keydown", (e) => {
@@ -619,7 +670,7 @@
   }
 
   /* =========================================================
-     9. TABS + CONTROLS WIRE-UP
+     10. TABS + CONTROLS WIRE-UP
   ========================================================= */
 
   function selectDifficulty(diff, dateStr){
@@ -665,7 +716,7 @@
   }
 
   /* =========================================================
-     10. MIDNIGHT ROLLOVER COUNTDOWN
+     11. MIDNIGHT ROLLOVER COUNTDOWN
   ========================================================= */
 
   function tickCountdown(){
@@ -689,7 +740,7 @@
   tickCountdown();
 
   /* =========================================================
-     11. INIT
+     12. INIT
   ========================================================= */
 
   buildGridDOM();
