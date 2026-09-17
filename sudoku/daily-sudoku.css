@@ -18,6 +18,7 @@
   --rule:         #CBC1A4;
   --grid-line:    #211E19;
   --accent-red:   #A23B2E;
+  --theme-accent: #A23B2E;
   --accent-blue:  #2C4A6B;
   --accent-green: #3E6B4C;
   --tint-blue-lo: rgba(44,74,107,0.08);
@@ -103,7 +104,7 @@
 .sdk-tab:hover{ color: var(--ink-soft); }
 .sdk-tab[aria-selected="true"]{
   color: var(--ink);
-  border-bottom-color: var(--accent-red);
+  border-bottom-color: var(--theme-accent);
 }
 
 /* ---------- Status row ---------- */
@@ -232,8 +233,8 @@
   animation: sdkStampIn .45s cubic-bezier(.2,1.4,.4,1) both;
 }
 .sdk-stamp-inner{
-  border: 4px solid var(--accent-red);
-  color: var(--accent-red);
+  border: 4px solid var(--theme-accent);
+  color: var(--theme-accent);
   font-family: var(--font-display);
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -288,7 +289,7 @@
 }
 .sdk-controls .sdk-ctrl-btn:last-child{ border-right:none; }
 .sdk-ctrl-btn:hover{ color: var(--ink); }
-.sdk-ctrl-btn[aria-pressed="true"]{ color: var(--accent-red); }
+.sdk-ctrl-btn[aria-pressed="true"]{ color: var(--theme-accent); }
 .sdk-ctrl-btn:disabled{ opacity:0.35; cursor:default; }
 .sdk-ctrl-btn svg{ width:18px; height:18px; stroke: currentColor; fill:none; }
 
@@ -332,7 +333,7 @@
   text-decoration: underline;
   cursor:pointer;
 }
-.sdk-reveal-link:hover{ color: var(--accent-red); }
+.sdk-reveal-link:hover{ color: var(--theme-accent); }
 .sdk-reveal-link:disabled{ opacity:0.35; cursor:default; text-decoration:none; }
 .sdk-reveal-link:disabled:hover{ color: var(--ink-faint); }
 .sdk-countdown{
@@ -396,4 +397,94 @@ details.sdk-devtools button{
   .sdk-controls{ gap:0; }
   .sdk-ctrl-btn{ padding: 4px 10px; font-size:0.72rem; }
   .sdk-num-btn{ width: 34px; height: 38px; font-size:0.95rem; }
+}
+
+/* ===========================================================
+   Seasonal / holiday themes
+   JS sets data-theme="<id>" on .sdk-root (see THEMES in
+   daily-sudoku.js). Each block below just re-points --paper,
+   --paper-raised and --theme-accent, and gives the masthead
+   motif its icon. No theme set (a normal day) = the plain
+   newsprint look above, unchanged.
+=========================================================== */
+
+.sdk-motif{
+  display:none;
+  width: 30px;
+  height: 30px;
+  margin: 10px auto 0;
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:contain;
+}
+.sdk-root[data-theme] .sdk-motif{ display:block; }
+
+/* New Year's Day */
+.sdk-root[data-theme="new-year"]{
+  --paper: #EFE7D4;
+  --paper-raised: #F8F1E0;
+  --theme-accent: #8C6D1F;
+}
+.sdk-root[data-theme="new-year"] .sdk-motif{
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><g fill='none' stroke='%238C6D1F' stroke-width='1.6' stroke-linecap='round'><path d='M12 3v6M12 15v6M3 12h6M15 12h6M6 6l4 4M14 14l4 4M18 6l-4 4M10 14l-4 4'/></g></svg>");
+}
+
+/* Valentine's Day (Feb 10-14) */
+.sdk-root[data-theme="valentines"]{
+  --paper: #EFE2DE;
+  --paper-raised: #F8EDE9;
+  --theme-accent: #9C3B54;
+}
+.sdk-root[data-theme="valentines"] .sdk-motif{
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='none' stroke='%239C3B54' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M12 20s-7-4.35-9.5-9A5.5 5.5 0 0112 5.5 5.5 5.5 0 0121.5 11c-2.5 4.65-9.5 9-9.5 9z'/></svg>");
+}
+
+/* St. Patrick's Day */
+.sdk-root[data-theme="st-patricks"]{
+  --paper: #E7EAD6;
+  --paper-raised: #F1F4E4;
+  --theme-accent: #3F7A4E;
+}
+.sdk-root[data-theme="st-patricks"] .sdk-motif{
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><g fill='none' stroke='%233F7A4E' stroke-width='1.6' stroke-linecap='round'><circle cx='9' cy='9' r='3.2'/><circle cx='15' cy='9' r='3.2'/><circle cx='12' cy='13.5' r='3.2'/><path d='M12 16.5v4'/></g></svg>");
+}
+
+/* Independence Day (Jul 1-4, US) */
+.sdk-root[data-theme="independence-day"]{
+  --paper: #EAE8DA;
+  --paper-raised: #F5F3E7;
+  --theme-accent: #1F3A63;
+}
+.sdk-root[data-theme="independence-day"] .sdk-motif{
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='none' stroke='%231F3A63' stroke-width='1.6' stroke-linejoin='round' d='M12 3l2.6 5.9 6.4.6-4.8 4.3 1.4 6.3L12 17l-5.6 3.1 1.4-6.3-4.8-4.3 6.4-.6z'/></svg>");
+}
+
+/* Halloween (Oct 25-31) */
+.sdk-root[data-theme="halloween"]{
+  --paper: #EBDFC4;
+  --paper-raised: #F5EAD3;
+  --theme-accent: #B5651D;
+}
+.sdk-root[data-theme="halloween"] .sdk-motif{
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><g fill='none' stroke='%232B2620' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M12 9c-2-3-6-4-10-2 2 1 3.5 2.5 4 4.5-1 .5-2.5 1-4 1 1.5 1.5 3.5 2 5.5 1.5.3 1 1 2 1.5 2'/><path d='M12 9c2-3 6-4 10-2-2 1-3.5 2.5-4 4.5 1 .5 2.5 1 4 1-1.5 1.5-3.5 2-5.5 1.5-.3 1-1 2-1.5 2'/><circle cx='12' cy='10.5' r='1.3'/></g></svg>");
+}
+
+/* Thanksgiving week (US, 4th-Thursday based) */
+.sdk-root[data-theme="thanksgiving"]{
+  --paper: #EAE0C8;
+  --paper-raised: #F5EDD9;
+  --theme-accent: #A15A2E;
+}
+.sdk-root[data-theme="thanksgiving"] .sdk-motif{
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><g fill='none' stroke='%23A15A2E' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M12 3c3 2 6 5 6 9a6 6 0 01-6 6 6 6 0 01-6-6c0-4 3-7 6-9z'/><path d='M12 6v12'/></g></svg>");
+}
+
+/* Winter holidays (all of December) */
+.sdk-root[data-theme="winter-holidays"]{
+  --paper: #E9E6D4;
+  --paper-raised: #F4F1E2;
+  --theme-accent: #2F5D3A;
+}
+.sdk-root[data-theme="winter-holidays"] .sdk-motif{
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><g fill='none' stroke='%232F5D3A' stroke-width='1.6' stroke-linecap='round'><path d='M12 3v18M4 7.5l16 9M20 7.5L4 16.5'/><path d='M12 6l-2 1.6M12 6l2 1.6M12 18l-2-1.6M12 18l2-1.6'/></g></svg>");
 }
