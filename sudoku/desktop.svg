@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  Daily Sudoku: SVG delivery wrapper.
+
+  Interactive markup lives inside foreignObject as XHTML, styled by
+  daily-sudoku.css and driven by daily-sudoku.js (both loaded as external
+  files, so they must sit alongside this .svg, same folder on your CDN or
+  jsDelivr path, for the relative href/src references below to resolve).
+
+  IMPORTANT, how this can be embedded:
+    Works:   object data="daily-sudoku.svg" type="image/svg+xml"
+             iframe src="daily-sudoku.svg"
+             pasting this file's markup directly inline into an HTML page
+    Does NOT work:   img src="daily-sudoku.svg"
+      Browsers render img-loaded SVGs as static, sandboxed images:
+      scripts don't run and foreignObject content is not interactive.
+
+  Sizing: the viewBox below (560 x 1050) is a design time estimate of the
+  widget's natural height at 560px wide. If your deployed fonts or controls
+  render slightly taller or shorter, adjust the height on both the svg
+  and foreignObject elements to match. Overflow is left visible so
+  content won't be clipped even if the guess is a little off.
+-->
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 560 1050" width="560" height="1050"
+     style="overflow:visible">
+  <title>Daily Sudoku</title>
+  <foreignObject x="0" y="0" width="560" height="1050" style="overflow:visible">
+    <div xmlns="http://www.w3.org/1999/xhtml" class="sdk-root" id="sdk-root">
+      <style>@import url('daily-sudoku.css');</style>
+
+      <div class="sdk-page">
+
+        <header class="sdk-masthead">
+          <h1>Sudoku</h1>
+          <div class="sdk-masthead-rule"></div>
+          <div class="sdk-masthead-rule sdk-thin"></div>
+        </header>
+        <div class="sdk-motif" id="sdk-motif" aria-hidden="true"></div>
+        <div class="sdk-dateline" id="sdk-dateline"></div>
+
+        <div class="sdk-refresh-banner" id="sdk-refreshBanner">
+          Today's puzzle is ready.
+          <button id="sdk-refreshBtn" type="button">Load it</button>
+        </div>
+
+        <div class="sdk-tabs" role="tablist" aria-label="Difficulty">
+          <button class="sdk-tab" role="tab" data-diff="easy" type="button">Easy</button>
+          <button class="sdk-tab" role="tab" data-diff="medium" type="button">Medium</button>
+          <button class="sdk-tab" role="tab" data-diff="hard" type="button">Hard</button>
+        </div>
+
+        <div class="sdk-status-row">
+          <span id="sdk-timer">0:00</span>
+          <span class="sdk-best" id="sdk-bestTime"></span>
+        </div>
+
+        <div id="sdk-toast" role="status" aria-live="polite"></div>
+
+        <div class="sdk-board-wrap">
+          <div class="sdk-board-square">
+            <div class="sdk-grid" id="sdk-grid" role="group" aria-label="Sudoku puzzle grid"></div>
+            <div class="sdk-stamp" id="sdk-stamp"><div class="sdk-stamp-inner" id="sdk-stampText">Solved</div></div>
+          </div>
+        </div>
+
+        <div class="sdk-numpad" id="sdk-numpad"></div>
+
+        <div class="sdk-controls">
+          <button class="sdk-ctrl-btn" id="sdk-notesBtn" type="button" aria-pressed="false">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+            Notes
+          </button>
+          <button class="sdk-ctrl-btn" id="sdk-undoBtn" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M3 13a9 9 0 1 0 3-7"/></svg>
+            Undo
+          </button>
+          <button class="sdk-ctrl-btn" id="sdk-eraseBtn" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H8l-6-6a2 2 0 0 1 0-2.8l9-9a2 2 0 0 1 2.8 0l7 7a2 2 0 0 1 0 2.8L14 20"/></svg>
+            Erase
+          </button>
+          <button class="sdk-ctrl-btn" id="sdk-checkBtn" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            Check
+          </button>
+        </div>
+
+        <div class="sdk-footer">
+          <button class="sdk-reveal-link" id="sdk-revealBtn" type="button">Reveal solution</button>
+          <div class="sdk-countdown" id="sdk-countdown"></div>
+        </div>
+
+        <details class="sdk-devtools">
+          <summary>Preview another date (for testing)</summary>
+          <div class="sdk-row">
+            <input type="date" id="sdk-previewDate"/>
+            <button id="sdk-previewBtn" type="button">Load</button>
+            <button id="sdk-previewToday" type="button">Today</button>
+          </div>
+        </details>
+
+      </div>
+
+      <script src="daily-sudoku.js"/>
+    </div>
+  </foreignObject>
+</svg>
