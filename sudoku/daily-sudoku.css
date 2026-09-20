@@ -46,6 +46,39 @@
   width:100%;
   max-width: 560px;
 }
+.sdk-root[data-mode="desktop"] .sdk-page{
+  max-width: 1000px;
+}
+
+/* sdk-layout groups everything below the masthead/dateline into one grid,
+   so mobile and desktop can show the exact same pieces in a different
+   arrangement without moving anything in the DOM. Mobile keeps the
+   original single-column reading order; desktop puts the board in a
+   fixed-width left column and stacks the rest in a column beside it. */
+.sdk-layout{
+  display:grid;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "tabs"
+    "status"
+    "toast"
+    "board"
+    "numpad"
+    "controls"
+    "footer";
+}
+.sdk-root[data-mode="desktop"] .sdk-layout{
+  grid-template-columns: 520px 1fr;
+  column-gap: 48px;
+  align-items:start;
+  grid-template-areas:
+    "board tabs"
+    "board status"
+    "board toast"
+    "board numpad"
+    "board controls"
+    "board footer";
+}
 
 /* ---------- Masthead ---------- */
 .sdk-masthead{
@@ -60,6 +93,9 @@
   text-transform: uppercase;
   margin: 0;
   color: var(--ink);
+}
+.sdk-root[data-mode="desktop"] .sdk-masthead h1{
+  font-size: 3.4rem;
 }
 .sdk-masthead-rule{
   margin: 10px auto 0;
@@ -82,6 +118,7 @@
 
 /* ---------- Difficulty tabs ---------- */
 .sdk-tabs{
+  grid-area: tabs;
   display:flex;
   justify-content:center;
   gap: 28px;
@@ -109,6 +146,7 @@
 
 /* ---------- Status row ---------- */
 .sdk-status-row{
+  grid-area: status;
   display:flex;
   align-items:baseline;
   justify-content:space-between;
@@ -119,6 +157,7 @@
 }
 .sdk-status-row .sdk-best{ color: var(--ink-faint); }
 #sdk-toast{
+  grid-area: toast;
   text-align:center;
   min-height: 1.2em;
   font-size: 0.82rem;
@@ -131,9 +170,14 @@
 
 /* ---------- Grid ---------- */
 .sdk-board-wrap{
+  grid-area: board;
   position:relative;
   width: min(480px, 100%);
   margin: 0 auto;
+}
+.sdk-root[data-mode="desktop"] .sdk-board-wrap{
+  width: 520px;
+  margin: 0;
 }
 /* Padding-percentage trick forces a perfect square at any width,
    without relying on the newer aspect-ratio property. */
@@ -182,6 +226,9 @@
   font-weight: 500;
   color: var(--accent-blue);
   line-height:1;
+}
+.sdk-root[data-mode="desktop"] .sdk-cell-value{
+  font-size: 1.65rem;
 }
 .sdk-cell:not(.sdk-has-value) .sdk-cell-value{ display:none; }
 .sdk-cell.sdk-given .sdk-cell-value{
@@ -263,6 +310,7 @@
 
 /* ---------- Controls ---------- */
 .sdk-controls{
+  grid-area: controls;
   display:flex;
   justify-content:center;
   align-items:center;
@@ -295,6 +343,7 @@
 
 /* ---------- Number pad ---------- */
 .sdk-numpad{
+  grid-area: numpad;
   display:flex;
   justify-content:center;
   gap: 6px;
@@ -322,6 +371,7 @@
 
 /* ---------- Footer ---------- */
 .sdk-footer{
+  grid-area: footer;
   text-align:center;
   margin-top: 22px;
 }
