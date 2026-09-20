@@ -229,7 +229,54 @@
   }
 
   /* =========================================================
-     4. APP STATE
+     4. DESKTOP / MOBILE LAYOUT MODE
+     Mobile and desktop are genuinely different canvases, not
+     one layout scaled up — daily-sudoku.css rearranges the CSS
+     Grid areas per mode, and this section resizes this file's
+     own <svg>/<foreignObject> to match, since foreignObject
+     content doesn't reliably see the real page viewport to do
+     that reflow with a plain CSS media query.
+  ========================================================= */
+
+  const LAYOUT_DIMS = {
+    mobile:  { w: 560,  h: 1050 },
+    desktop: { w: 1040, h: 760  },
+  };
+
+  function detectMode(){
+    // 1) Explicit wins: daily-sudoku.svg?mode=desktop (or ?mode=mobile),
+    //    set from your own page's embed code / media query.
+    try{
+      const params = new URLSearchParams(window.location.search);
+      const explicit = params.get("mode");
+      if (explicit === "desktop" || explicit === "mobile") return explicit;
+    } catch(e){ /* location/URLSearchParams unavailable — fall through */ }
+    // 2) Best-effort auto-detect. Not guaranteed accurate in every
+    //    embedding context, which is why (1) is the recommended path.
+    try{
+      if (window.matchMedia && window.matchMedia("(min-width: 700px)").matches) return "desktop";
+    } catch(e){ /* matchMedia unavailable — fall through */ }
+    return "mobile";
+  }
+
+  function applyLayoutMode(mode){
+    state.mode = mode;
+    els.root.setAttribute("data-mode", mode);
+    const dims = LAYOUT_DIMS[mode] || LAYOUT_DIMS.mobile;
+    const svgEl = els.root.closest("svg");
+    if (!svgEl) return;
+    svgEl.setAttribute("viewBox", "0 0 " + dims.w + " " + dims.h);
+    svgEl.setAttribute("width", dims.w);
+    svgEl.setAttribute("height", dims.h);
+    const fo = svgEl.querySelector("foreignObject");
+    if (fo){
+      fo.setAttribute("width", dims.w);
+      fo.setAttribute("height", dims.h);
+    }
+  }
+
+  /* =========================================================
+     5. APP STATE
   ========================================================= */
 
   const els = {
@@ -254,9 +301,12 @@
     previewDate: document.getElementById("sdk-previewDate"),
     previewBtn: document.getElementById("sdk-previewBtn"),
     previewToday: document.getElementById("sdk-previewToday"),
+    mobileViewBtn: document.getElementById("sdk-mobileViewBtn"),
+    desktopViewBtn: document.getElementById("sdk-desktopViewBtn"),
   };
 
   const state = {
+    mode: "mobile",
     viewingToday: true,
     date: todayStr(),
     difficulty: null,
@@ -280,7 +330,7 @@
   function bestKey(diff){ return "sudoku:best:" + diff; }
 
   /* =========================================================
-     5. LOAD / SAVE
+     6. LOAD / SAVE
   ========================================================= */
 
   function loadOrCreate(dateStr, difficulty){
@@ -361,7 +411,7 @@
   }
 
   /* =========================================================
-     6. TIMER
+     7. TIMER
   ========================================================= */
 
   function startTimer(){
@@ -382,7 +432,7 @@
   });
 
   /* =========================================================
-     7. GRID BUILD + RENDER
+     8. GRID BUILD + RENDER
   ========================================================= */
 
   const cellEls = [];
@@ -517,7 +567,7 @@
   }
 
   /* =========================================================
-     8. INTERACTION
+     9. INTERACTION
   ========================================================= */
 
   function selectCell(idx){
@@ -646,7 +696,7 @@
   }
 
   /* =========================================================
-     9. KEYBOARD
+     10. KEYBOARD
   ========================================================= */
 
   document.addEventListener("keydown", (e) => {
@@ -670,7 +720,7 @@
   }
 
   /* =========================================================
-     10. TABS + CONTROLS WIRE-UP
+     11. TABS + CONTROLS WIRE-UP
   ========================================================= */
 
   function selectDifficulty(diff, dateStr){
@@ -711,12 +761,15 @@
     selectDifficulty(state.difficulty, d);
   });
 
+  els.mobileViewBtn.addEventListener("click", () => applyLayoutMode("mobile"));
+  els.desktopViewBtn.addEventListener("click", () => applyLayoutMode("desktop"));
+
   function updateDateline(dateStr){
     els.dateline.textContent = formatDateLine(dateStr) + "  ·  No. " + issueNumber(dateStr);
   }
 
   /* =========================================================
-     11. MIDNIGHT ROLLOVER COUNTDOWN
+     12. MIDNIGHT ROLLOVER COUNTDOWN
   ========================================================= */
 
   function tickCountdown(){
@@ -740,9 +793,10 @@
   tickCountdown();
 
   /* =========================================================
-     12. INIT
+     13. INIT
   ========================================================= */
 
+  applyLayoutMode(detectMode());
   buildGridDOM();
   buildNumpadDOM();
 
